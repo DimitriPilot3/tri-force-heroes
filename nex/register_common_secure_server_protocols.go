@@ -3,7 +3,6 @@ package nex
 import (
 	"crypto/rand"
 	"encoding/binary"
-	"fmt"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -25,14 +24,19 @@ import (
 	"github.com/PretendoNetwork/tri-force-heroes/globals"
 )
 
+// * This custom handler may edit the session search criteria(s) before they are processed by BrowseMatchmakeSession / AutoMatchmakeWithParam_Postpone / AutoMatchmakeWithSearchCriteria_Postpone
 func cleanupMatchmakeSessionSearchCriterias(searchCriterias types.List[match_making_types.MatchmakeSessionSearchCriteria]) {
+	for _, searchCriteria := range searchCriterias {
+		// * Ignore region lock during session searches. All players will be matched together regardless of their game region.
+		searchCriteria.Attribs[4] = types.NewString("")
+	}
 }
 
+// * This custom handler may edit the matchmake session before it is processed by AutoMatchmake_Postpone
+//
+// The game client never invokes this RMC method from what I've seen, but if it does... yuck
 func cleanupSearchMatchmakeSessionHandler(matchmakeSession *match_making_types.MatchmakeSession) {
-	// matchmakeSession.Attributes[2] = 0
-	matchmakeSession.MatchmakeParam = match_making_types.NewMatchmakeParam()
-	// matchmakeSession.ApplicationData = make([]byte, 0)
-	fmt.Println(matchmakeSession.String())
+	globals.Logger.Infof("CleanupSearchMatchmakeSession called! ID=%d; GameMode=%v; Attributes=%v", matchmakeSession.ID, matchmakeSession.GameMode, matchmakeSession.Attributes)
 }
 
 func stubGetPlayingSession(err error, packet nex.PacketInterface, callID uint32, _ types.List[types.PID]) (*nex.RMCMessage, *nex.Error) {
