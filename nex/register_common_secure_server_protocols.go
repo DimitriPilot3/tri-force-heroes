@@ -3,7 +3,6 @@ package nex
 import (
 	"crypto/rand"
 	"encoding/binary"
-	"fmt"
 
 	"github.com/PretendoNetwork/nex-go/v2"
 	"github.com/PretendoNetwork/nex-go/v2/types"
@@ -26,13 +25,17 @@ import (
 )
 
 func cleanupMatchmakeSessionSearchCriterias(searchCriterias types.List[match_making_types.MatchmakeSessionSearchCriteria]) {
+	for _, searchCriteria := range searchCriterias {
+		// * Remove region lock during session searches. All players will be matched together regardless of their game region.
+		searchCriteria.Attribs[4] = types.NewString("")
+	}
 }
 
 func cleanupSearchMatchmakeSessionHandler(matchmakeSession *match_making_types.MatchmakeSession) {
 	// matchmakeSession.Attributes[2] = 0
-	matchmakeSession.MatchmakeParam = match_making_types.NewMatchmakeParam()
+	// matchmakeSession.MatchmakeParam = match_making_types.NewMatchmakeParam()
 	// matchmakeSession.ApplicationData = make([]byte, 0)
-	fmt.Println(matchmakeSession.String())
+	// fmt.Println(matchmakeSession.String())
 }
 
 func stubGetPlayingSession(err error, packet nex.PacketInterface, callID uint32, _ types.List[types.PID]) (*nex.RMCMessage, *nex.Error) {
